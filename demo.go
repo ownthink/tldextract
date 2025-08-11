@@ -1,3 +1,4 @@
+```
 package main
 
 import (
@@ -22,3 +23,4 @@ func main() {
 	fmt.Println("prefix:", prefix, "domain:", domain, "suffix:", suffix, "website:", website, "subdomain:", subdomain, "path:", path, "query:", query,)
 }
 
+```
