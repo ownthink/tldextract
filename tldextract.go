@@ -9,6 +9,7 @@ import (
 	"net"
 	"bufio"
 	"net/url"
+	_ "embed"
 	// "golang.org/x/net/idna"
 )
 
@@ -46,19 +47,29 @@ func readLine(r *bufio.Reader) (string, error) {
 	return string(buffer), err
 }
 
-func New(cacheFile string) (*TLDExtract, error) {
+//go:embed data/public_suffix_list.dat
+var public_suffix string
+
+func New(cacheFiles ...string) (*TLDExtract, error) {
 	newMap := make(map[string]*Trie)
 	rootNode := &Trie{ExceptRule: false, ValidTld: false, matches: newMap}
-	hasSuffix := false
 	
-	fin, err := os.Open(cacheFile)
-	if err != nil {
-		fmt.Println("v0.0.1")
-		fmt.Println("可以访问链接下载后缀文件：https://publicsuffix.org/list/public_suffix_list.dat")
-		return &TLDExtract{}, err
+	hasSuffix := false
+	var br *bufio.Reader
+	if len(cacheFiles) == 0 {
+		br = bufio.NewReader(strings.NewReader(public_suffix))
+	} else {
+		fin, err := os.Open(cacheFiles[0])
+		if err != nil {
+			fmt.Println("v0.0.1")
+			fmt.Println("download cacheFile：")
+			fmt.Println("https://publicsuffix.org/list/public_suffix_list.dat")
+			return &TLDExtract{}, err
+		}
+		defer fin.Close()
+		br = bufio.NewReader(fin)
 	}
 
-	br := bufio.NewReader(fin)
 	for {
 		line, err := readLine(br)
 		if err == io.EOF {
@@ -68,7 +79,7 @@ func New(cacheFile string) (*TLDExtract, error) {
 		if line=="" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, "//"){
 			continue
 		}
-		
+
 		// 检查是否为!开头的后缀，此后缀将不被作为后缀
 		exceptionRule := line[0] == '!'
 		if exceptionRule {
@@ -77,7 +88,6 @@ func New(cacheFile string) (*TLDExtract, error) {
 		addTldRule(rootNode, strings.Split(line, "."), exceptionRule)
 		hasSuffix = true
 	}
-	fin.Close()
 	
 	if hasSuffix==false{
 		return &TLDExtract{}, errors.New("输入文件没有定义任何后缀")
@@ -236,14 +246,20 @@ func main() {
 	
 	url = "https://www.domain.cn:8443/fasdfa"
 	
-	extract, _ := New("data/tld.cache") // tldextract.
+	// extract, _ := New("data/public_suffix_list.dat")
+	
+	extract, _ := New()
 	
 	tld := extract.Extract(url)
 	prefix := tld.Prefix
 	domain := tld.Domain
 	suffix := tld.Suffix
-		
-	fmt.Println("解析1", "域名", domain, "后缀", suffix, "前缀", prefix)
+	website := tld.Website
+	subdomain := tld.Subdomain
+	path := tld.Path
+	query := tld.Query
+	
+	fmt.Println("prefix:", prefix, "domain:", domain, "suffix:", suffix, "website:", website, "subdomain:", subdomain, "path:", path, "query:", query,)
 
 }
 
