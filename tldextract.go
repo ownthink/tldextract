@@ -1,5 +1,6 @@
 package tldextract
 
+
 import (
 	"fmt"
 	"strings"
@@ -10,7 +11,7 @@ import (
 	"bufio"
 	"net/url"
 	_ "embed"
-	// "golang.org/x/net/idna"
+	"golang.org/x/net/idna"
 )
 
 type DomainResult struct {
@@ -61,7 +62,7 @@ func New(cacheFiles ...string) (*TLDExtract, error) {
 	} else {
 		fin, err := os.Open(cacheFiles[0])
 		if err != nil {
-			fmt.Println("v0.0.1")
+			fmt.Println("v0.0.5")
 			fmt.Println("download cacheFile：")
 			fmt.Println("https://publicsuffix.org/list/public_suffix_list.dat")
 			return &TLDExtract{}, err
@@ -84,9 +85,23 @@ func New(cacheFiles ...string) (*TLDExtract, error) {
 		exceptionRule := line[0] == '!'
 		if exceptionRule {
 			line = line[1:]
+			if line==""{
+				continue
+			}
 		}
+		
 		addTldRule(rootNode, strings.Split(line, "."), exceptionRule)
 		hasSuffix = true
+		
+		punycodeTld, err := idna.ToASCII(line)
+		if err==nil && punycodeTld!=line && punycodeTld!=""{
+			addTldRule(rootNode, strings.Split(punycodeTld, "."), exceptionRule)
+		}
+		
+		originalDomain, err := idna.ToUnicode(line)
+		if err==nil && originalDomain!=line && originalDomain!=""{
+			addTldRule(rootNode, strings.Split(originalDomain, "."), exceptionRule)
+		}
 	}
 	
 	if hasSuffix==false{
@@ -212,4 +227,5 @@ func (extract *TLDExtract) getTldIndex(labels []string) (int, bool) {
 	
 	return longestValidTldIdx, longestValidTld
 }
+
 
