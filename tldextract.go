@@ -61,7 +61,7 @@ func New(cacheFiles ...string) (*TLDExtract, error) {
 	} else {
 		fin, err := os.Open(cacheFiles[0])
 		if err != nil {
-			fmt.Println("v0.0.7")
+			fmt.Println("v0.0.8")
 			fmt.Println("download cacheFile：")
 			fmt.Println("https://publicsuffix.org/list/public_suffix_list.dat")
 			return &TLDExtract{}, err
@@ -151,18 +151,20 @@ func (extract *TLDExtract) Extract(s string) *DomainResult {
 		subdomain = h
 	}
 	
+	if strings.Index(subdomain, ".")<=0{
+		return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
+	}
+	
 	prefix, domain, suffix := "", "", ""
 	
 	if net.ParseIP(subdomain)!=nil{ // 是纯ip地址
 		domain = subdomain
 	}else{ // 是域名
 		prefix, domain, suffix = extract.extract(subdomain)
-		
-		// domain, err = idna.ToASCII(domain)
 	}
 	
-	if domain=="" || website=="" || 
-			strings.Index(domain, ".")<0 || strings.Index(website, ".")<0{
+	if domain=="" || website=="" || strings.Index(domain, ".")<0 || 
+			strings.Index(website, ".")<0{
 		return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
 	}
 	
@@ -229,4 +231,5 @@ func (extract *TLDExtract) getTldIndex(labels []string) (int, bool) {
 	
 	return longestValidTldIdx, longestValidTld
 }
+
 
