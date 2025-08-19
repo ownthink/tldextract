@@ -163,8 +163,8 @@ func (extract *TLDExtract) Extract(s string) *DomainResult {
 		prefix, domain, suffix = extract.extract(subdomain)
 	}
 	
-	if domain=="" || website=="" || strings.Index(domain, ".")<0 || 
-			strings.Index(website, ".")<0{
+	if domain=="" || website=="" || strings.Index(domain, ".")<=0 || 
+			strings.Index(website, ".")<=0{
 		return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
 	}
 	
@@ -231,5 +231,6 @@ func (extract *TLDExtract) getTldIndex(labels []string) (int, bool) {
 	
 	return longestValidTldIdx, longestValidTld
 }
+
 
 
