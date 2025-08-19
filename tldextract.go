@@ -61,7 +61,7 @@ func New(cacheFiles ...string) (*TLDExtract, error) {
 	} else {
 		fin, err := os.Open(cacheFiles[0])
 		if err != nil {
-			fmt.Println("v0.0.6")
+			fmt.Println("v0.0.7")
 			fmt.Println("download cacheFile：")
 			fmt.Println("https://publicsuffix.org/list/public_suffix_list.dat")
 			return &TLDExtract{}, err
@@ -229,3 +229,4 @@ func (extract *TLDExtract) getTldIndex(labels []string) (int, bool) {
 	
 	return longestValidTldIdx, longestValidTld
 }
+
