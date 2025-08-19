@@ -1,6 +1,5 @@
 package tldextract
 
-
 import (
 	"fmt"
 	"strings"
@@ -144,13 +143,12 @@ func (extract *TLDExtract) Extract(s string) *DomainResult {
 	query := u.RawQuery
 
 	subdomain := website
-	h, _, err := net.SplitHostPort(website)
-	if err==nil{ // 没有端口的将返回错误
+	if strings.Index(website, ":")>=0{
+		h, _, err := net.SplitHostPort(website)
+		if err!=nil{
+			return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
+		}
 		subdomain = h
-	}
-	
-	if strings.Index(subdomain, ":")>=0{
-		return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
 	}
 	
 	prefix, domain, suffix := "", "", ""
@@ -231,6 +229,3 @@ func (extract *TLDExtract) getTldIndex(labels []string) (int, bool) {
 	
 	return longestValidTldIdx, longestValidTld
 }
-
-
-
