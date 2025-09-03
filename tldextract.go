@@ -61,7 +61,7 @@ func New(cacheFiles ...string) (*TLDExtract, error) {
 	} else {
 		fin, err := os.Open(cacheFiles[0])
 		if err != nil {
-			fmt.Println("v0.0.8")
+			fmt.Println("v0.0.9")
 			fmt.Println("download cacheFile：")
 			fmt.Println("https://publicsuffix.org/list/public_suffix_list.dat")
 			return &TLDExtract{}, err
@@ -80,12 +80,16 @@ func New(cacheFiles ...string) (*TLDExtract, error) {
 			continue
 		}
 
-		// 检查是否为!开头的后缀，此后缀将不被作为后缀
+		// 检查是否为!开头的后缀，此后缀将不被作为后缀，并添加右侧的为后缀来修正
 		exceptionRule := line[0] == '!'
 		if exceptionRule {
 			line = line[1:]
 			if line==""{
 				continue
+			}
+			exLabels := strings.Split(line, ".")
+			if len(exLabels)>1{
+				addTldRule(rootNode, exLabels[1:], false)
 			}
 		}
 		
@@ -231,6 +235,7 @@ func (extract *TLDExtract) getTldIndex(labels []string) (int, bool) {
 	
 	return longestValidTldIdx, longestValidTld
 }
+
 
 
 
