@@ -61,7 +61,7 @@ func New(cacheFiles ...string) (*TLDExtract, error) {
 	} else {
 		fin, err := os.Open(cacheFiles[0])
 		if err != nil {
-			fmt.Println("v0.0.9")
+			fmt.Println("v0.0.10")
 			fmt.Println("download cacheFile：")
 			fmt.Println("https://publicsuffix.org/list/public_suffix_list.dat")
 			return &TLDExtract{}, err
@@ -86,10 +86,6 @@ func New(cacheFiles ...string) (*TLDExtract, error) {
 			line = line[1:]
 			if line==""{
 				continue
-			}
-			exLabels := strings.Split(line, ".")
-			if len(exLabels)>1{
-				addTldRule(rootNode, exLabels[1:], false)
 			}
 		}
 		
@@ -214,7 +210,9 @@ func (extract *TLDExtract) getTldIndex(labels []string) (int, bool) {
 	t := extract.rootNode
 	longestValidTldIdx := -1
 	longestValidTld := false
-	for i := len(labels) - 1; i >= 0; i-- {
+	
+	length := len(labels)
+	for i := length - 1; i >= 0; i-- {
 		lab := labels[i]
 		
 		n, found := t.matches[lab]
@@ -226,6 +224,10 @@ func (extract *TLDExtract) getTldIndex(labels []string) (int, bool) {
 			longestValidTldIdx = i
 			longestValidTld = true
 			t = n
+		}else if found && n.ExceptRule && i+1<length{
+			longestValidTldIdx = i+1
+			longestValidTld = true
+			t = n
 		}else if found{
 			t = n
 		}else{
@@ -235,6 +237,7 @@ func (extract *TLDExtract) getTldIndex(labels []string) (int, bool) {
 	
 	return longestValidTldIdx, longestValidTld
 }
+
 
 
 
