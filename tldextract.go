@@ -51,17 +51,22 @@ func readLine(r *bufio.Reader) (string, error) {
 //go:embed data/public_suffix_list.dat
 var public_suffix string
 
-func New(cacheFiles ...string) (*TLDExtract, error) {
+func New(args ...string) (*TLDExtract, error) {
+	cacheFile := ""
+	if len(args)>0{
+		cacheFile = args[0]
+	}
+	
 	newMap := make(map[string]*Trie)
 	rootNode := &Trie{ExceptRule: false, IcannRule:false, ValidTld: false, matches: newMap}
 	
 	var br *bufio.Reader
-	if len(cacheFiles) == 0 {
+	if cacheFile==""{
 		br = bufio.NewReader(strings.NewReader(public_suffix))
 	} else {
-		fin, err := os.Open(cacheFiles[0])
+		fin, err := os.Open(cacheFile)
 		if err != nil {
-			fmt.Println("v0.0.10")
+			fmt.Println("v0.1.2")
 			fmt.Println("download cacheFile：")
 			fmt.Println("https://publicsuffix.org/list/public_suffix_list.dat")
 			return &TLDExtract{}, err
@@ -173,6 +178,9 @@ func (extract *TLDExtract) Extract(s string, args ...bool) *DomainResult {
 	if strings.Index(subdomain, ".")<=0{
 		return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
 	}
+	if strings.HasPrefix(subdomain, ".") || strings.HasSuffix(subdomain, "."){
+		return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
+	}
 	
 	prefix, domain, suffix := "", "", ""
 	
@@ -186,13 +194,16 @@ func (extract *TLDExtract) Extract(s string, args ...bool) *DomainResult {
 			strings.Index(website, ".")<=0{
 		return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
 	}
+	if strings.HasPrefix(domain, ".") || strings.HasSuffix(domain, "."){
+		return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
+	}
 	
 	return &DomainResult{Prefix: prefix, Domain: domain, Suffix: suffix, Website:website, Subdomain: subdomain, Path: path, Query: query}
 }
 
-func (extract *TLDExtract) extract(url string, includePrivate bool)(string, string, string){
+func (extract *TLDExtract) extract(subdomain string, includePrivate bool)(string, string, string){
 	prefix, domain, suffix := "", "", ""
-	domain_head, tld := extract.extractTld(url, includePrivate)
+	domain_head, tld := extract.extractTld(subdomain, includePrivate)
 	if domain_head=="" || tld==""{
 		return prefix, domain, suffix
 	}
@@ -256,6 +267,7 @@ func (extract *TLDExtract) getTldIndex(labels []string, includePrivate bool) (in
 	
 	return longestValidTldIdx, longestValidTld
 }
+
 
 
 
