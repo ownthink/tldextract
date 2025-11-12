@@ -163,18 +163,19 @@ func (extract *TLDExtract) Extract(s string, args ...bool) *DomainResult {
 	
 	website := strings.ToLower(u.Host)
 	website = strings.Trim(website, ".")
+	website = strings.Trim(website, ":")
 	path := u.Path
 	query := u.RawQuery
 
 	subdomain := website
 	if strings.Index(website, ":")>=0{
-		h, _, err := net.SplitHostPort(website)
-		if err!=nil{
+		h, p, err := net.SplitHostPort(website)
+		if err!=nil || h=="" || p==""{
 			return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
 		}
 		subdomain = h
 	}
-	
+
 	if strings.Index(subdomain, ".")<=0{
 		return &DomainResult{Prefix: "", Domain: "", Suffix: "", Website:"", Subdomain: "", Path: "", Query: ""}
 	}
@@ -267,6 +268,7 @@ func (extract *TLDExtract) getTldIndex(labels []string, includePrivate bool) (in
 	
 	return longestValidTldIdx, longestValidTld
 }
+
 
 
 
