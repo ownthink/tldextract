@@ -10,10 +10,10 @@ import (
 )
 
 func main() {
-	url := "https://www.domain.cn:8443/fasdfa"
-	
 	var extract, _ = tldextract.New()
-	
+
+	url := "https://www.domain.cn:8443/fasdfa"
+
 	tld := extract.Extract(url)
 	prefix := tld.Prefix
 	domain := tld.Domain
