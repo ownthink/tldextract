@@ -12,7 +12,7 @@ import (
 func main() {
 	url := "https://www.domain.cn:8443/fasdfa"
 	
-	extract, _ := tldextract.New("data/public_suffix_list.dat")
+	var extract, _ = tldextract.New() // "data/public_suffix_list.dat"
 	
 	tld := extract.Extract(url)
 	prefix := tld.Prefix
